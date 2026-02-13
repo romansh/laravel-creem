@@ -1,0 +1,51 @@
+laravel-creem/
+├── src/
+│   ├── Creem.php                          # Main facade accessor
+│   ├── CreemServiceProvider.php           # Service provider
+│   ├── Http/
+│   │   ├── CreemClient.php                # HTTP client wrapper
+│   │   ├── Controllers/
+│   │   │   └── WebhookController.php      # Webhook handler
+│   │   └── Middleware/
+│   │       └── VerifyCreemWebhook.php     # Signature verification
+│   ├── Services/
+│   │   ├── ProductService.php
+│   │   ├── CheckoutService.php
+│   │   ├── CustomerService.php
+│   │   └── SubscriptionService.php
+│   ├── Events/
+│   │   ├── CheckoutCompleted.php
+│   │   ├── SubscriptionCreated.php
+│   │   ├── SubscriptionCanceled.php
+│   │   └── PaymentFailed.php
+│   ├── Exceptions/
+│   │   ├── CreemException.php
+│   │   ├── ApiException.php
+│   │   └── ConfigurationException.php
+│   └── Console/
+│       └── Commands/
+│           └── TestWebhookCommand.php
+├── config/
+│   └── creem.php                          # Publishable config
+├── routes/
+│   └── webhooks.php                       # Webhook routes
+├── tests/
+│   ├── Unit/
+│   │   ├── ProductServiceTest.php
+│   │   ├── CheckoutServiceTest.php
+│   │   ├── CustomerServiceTest.php
+│   │   └── SubscriptionServiceTest.php
+│   └── Feature/
+│       ├── WebhookTest.php
+│       └── ConfigurationTest.php
+├── examples/
+│   └── laravel-app/                       # Example Laravel application
+│       ├── Controllers/
+│       │   ├── CheckoutController.php
+│       │   └── WebhookController.php
+│       └── routes/
+│           ├── web.php
+│           └── api.php
+├── composer.json
+├── phpunit.xml
+└── README.md
