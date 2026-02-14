@@ -27,7 +27,7 @@ class ProductService
      */
     public function create(array $data): array
     {
-        return $this->client->post('/v1/products/create', $data);
+        return $this->client->post('/v1/products', $data);
     }
 
     /**
