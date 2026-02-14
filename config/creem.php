@@ -28,6 +28,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Creem API Base URLs
+    |--------------------------------------------------------------------------
+    |
+    | Define the base URLs used to communicate with the Creem API.
+    | The test (sandbox) URL is used when test mode is enabled,
+    | while the production URL is used for live transactions.
+    |
+    */
+
+    'test_api_url' => env('CREEM_TEST_API_URL', 'https://test-api.creem.io/v1'),
+
+    'api_url' => env('CREEM_API_URL', 'https://api.creem.io/v1'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Webhook Configuration
     |--------------------------------------------------------------------------
     |

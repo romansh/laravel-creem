@@ -38,8 +38,8 @@ class CreemClient
     protected function baseUrl(): string
     {
         return $this->testMode
-            ? 'https://test-api.creem.io'
-            : 'https://api.creem.io';
+            ? config('creem.test_api_url')
+            : config('creem.api_url');
     }
 
     /**
@@ -64,9 +64,9 @@ class CreemClient
     /**
      * Send a GET request.
      */
-    public function get(string $uri, array $query = []): array
+    public function get(string $endpoint, array $query = []): array
     {
-        $response = $this->client()->get($uri, $query);
+        $response = $this->client()->get($endpoint, $query);
 
         return $this->handleResponse($response);
     }
@@ -74,9 +74,9 @@ class CreemClient
     /**
      * Send a POST request.
      */
-    public function post(string $uri, array $data = []): array
+    public function post(string $endpoint, array $data = []): array
     {
-        $response = $this->client()->post($uri, $data);
+        $response = $this->client()->post($endpoint, $data);
 
         return $this->handleResponse($response);
     }
