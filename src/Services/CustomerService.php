@@ -27,7 +27,7 @@ class CustomerService
      */
     public function find(string $customerId): array
     {
-        return $this->client->get('/v1/customers', [
+        return $this->client->get('/customers', [
             'customer_id' => $customerId,
         ]);
     }
@@ -37,7 +37,7 @@ class CustomerService
      */
     public function findByEmail(string $email): array
     {
-        return $this->client->get('/v1/customers', [
+        return $this->client->get('/customers', [
             'email' => $email,
         ]);
     }
@@ -47,7 +47,7 @@ class CustomerService
      */
     public function list(int $page = 1, int $pageSize = 20): array
     {
-        return $this->client->get('/v1/customers/list', [
+        return $this->client->get('/customers/list', [
             'page_number' => $page,
             'page_size' => $pageSize,
         ]);
@@ -66,7 +66,7 @@ class CustomerService
      */
     public function createPortalLink(string $customerId): string
     {
-        $response = $this->client->post('/v1/customers/billing', [
+        $response = $this->client->post('/customers/billing', [
             'customer_id' => $customerId,
         ]);
 

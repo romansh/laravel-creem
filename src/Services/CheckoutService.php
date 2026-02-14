@@ -29,6 +29,6 @@ class CheckoutService
      */
     public function create(array $data): array
     {
-        return $this->client->post('/v1/checkouts', $data);
+        return $this->client->post('/checkouts', $data);
     }
 }

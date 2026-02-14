@@ -27,7 +27,7 @@ class ProductService
      */
     public function create(array $data): array
     {
-        return $this->client->post('/v1/products', $data);
+        return $this->client->post('/products', $data);
     }
 
     /**
@@ -35,7 +35,7 @@ class ProductService
      */
     public function find(string $productId): array
     {
-        return $this->client->get('/v1/products', [
+        return $this->client->get('/products', [
             'product_id' => $productId,
         ]);
     }
@@ -45,7 +45,7 @@ class ProductService
      */
     public function list(int $page = 1, int $pageSize = 20): array
     {
-        return $this->client->get('/v1/products/search', [
+        return $this->client->get('/products/search', [
             'page_number' => $page,
             'page_size' => $pageSize,
         ]);
