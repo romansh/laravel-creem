@@ -1,6 +1,4 @@
-# LaravelCreem  Package
-
-
+# LaravelCreem Package
 
 A Laravel package for [Creem.io](https://creem.io) payment provider. Built with Laravel-native patterns, clean architecture, and developer experience as top priorities.
 
@@ -12,9 +10,10 @@ A Laravel package for [Creem.io](https://creem.io) payment provider. Built with 
 
 - **Laravel-Native**: Built on `Illuminate\Http\Client` with automatic retries and timeouts
 - **Multi-Profile Configuration**: Support multiple API keys and environments
+- **Complete API Coverage**: Products, Checkouts, Customers, Subscriptions, Transactions, Licenses, and Discounts
 - **Webhooks**: Built-in signature verification and event dispatching
 - **Type-Safe**: Full PHPDoc annotations and Laravel IDE helper compatible
-- **Well-Tested**: >70% test coverage with unit and feature tests
+- **Well-Tested**: Comprehensive unit and feature tests
 - **Event-Driven**: Laravel events for all webhook types
 - **Artisan Commands**: Test webhooks locally with ease
 - **PSR-12 Compliant**: Clean, readable, maintainable code
@@ -22,14 +21,14 @@ A Laravel package for [Creem.io](https://creem.io) payment provider. Built with 
 ## Requirements
 
 - PHP 8.1 or higher
-- Laravel 10.x or 11.x
+- Laravel 10.x, 11.x, 12.x
 
 ## Installation
 
 Install via Composer:
 
 ```bash
-composer require creem/laravel
+composer require romansh/laravel-creem
 ```
 
 Publish the configuration file:
@@ -167,6 +166,9 @@ $checkout = Creem::checkouts()->create([
     ],
 ]);
 
+// Find a checkout session
+$checkout = Creem::checkouts()->find('chk_123');
+
 // Redirect to checkout URL
 return redirect($checkout['checkout_url']);
 ```
@@ -198,6 +200,9 @@ use Romansh\LaravelCreem\Facades\Creem;
 // Find a subscription
 $subscription = Creem::subscriptions()->find('sub_123');
 
+// List subscriptions
+$subscriptions = Creem::subscriptions()->list($page = 1, $limit = 20);
+
 // Cancel a subscription
 $subscription = Creem::subscriptions()->cancel('sub_123');
 
@@ -207,12 +212,110 @@ $subscription = Creem::subscriptions()->pause('sub_123');
 // Resume a paused subscription
 $subscription = Creem::subscriptions()->resume('sub_123');
 
-// Upgrade a subscription
+// Upgrade/change subscription to a different product
 $subscription = Creem::subscriptions()->upgrade(
     subscriptionId: 'sub_123',
     productId: 'prod_456',
     updateBehavior: 'proration-charge-immediately'
 );
+
+// Update subscription data
+$subscription = Creem::subscriptions()->update('sub_123', [
+    'metadata' => ['updated' => true],
+]);
+```
+
+### Transactions
+
+```php
+use Romansh\LaravelCreem\Facades\Creem;
+
+// Find a transaction by ID
+$transaction = Creem::transactions()->find('txn_123');
+
+// List all transactions (paginated)
+$transactions = Creem::transactions()->list([], $page = 1, $pageSize = 20);
+
+// List transactions with filters
+$transactions = Creem::transactions()->list([
+    'customer_id' => 'cust_123',
+    'product_id' => 'prod_456',
+], $page = 1, $pageSize = 20);
+
+// Get transactions for a specific customer
+$transactions = Creem::transactions()->byCustomer('cust_123');
+
+// Get transactions for a specific order
+$transactions = Creem::transactions()->byOrder('ord_456');
+
+// Get transactions for a specific product
+$transactions = Creem::transactions()->byProduct('prod_789');
+```
+
+### Licenses
+
+```php
+use Romansh\LaravelCreem\Facades\Creem;
+
+// Validate a license key
+$license = Creem::licenses()->validate(
+    key: 'ABC123-XYZ456-XYZ456-XYZ456',
+    instanceId: 'inst_123'
+);
+
+if ($license['status'] === 'active') {
+    // Grant access to premium features
+}
+
+// Activate a license on a new device
+$license = Creem::licenses()->activate(
+    key: 'ABC123-XYZ456-XYZ456-XYZ456',
+    instanceName: 'johns-macbook-pro'
+);
+
+$instanceId = $license['instance']['id'];
+
+// Deactivate a license instance
+$license = Creem::licenses()->deactivate(
+    key: 'ABC123-XYZ456-XYZ456-XYZ456',
+    instanceId: 'inst_123'
+);
+```
+
+### Discount Codes
+
+```php
+use Romansh\LaravelCreem\Facades\Creem;
+
+// Create a percentage discount
+$discount = Creem::discounts()->create([
+    'name' => 'Summer Sale 2024',
+    'code' => 'SUMMER50',
+    'type' => 'percentage',
+    'percentage' => 50,
+    'duration' => 'once',
+    'max_redemptions' => 100,
+    'expiry_date' => '2024-12-31T23:59:59Z',
+]);
+
+// Create a fixed amount discount
+$discount = Creem::discounts()->create([
+    'name' => 'Welcome Bonus',
+    'code' => 'WELCOME20',
+    'type' => 'fixed',
+    'amount' => 2000, // $20.00 in cents
+    'currency' => 'USD',
+    'duration' => 'once',
+]);
+
+// Find discount by ID
+$discount = Creem::discounts()->find('disc_123');
+
+// Find discount by code
+$discount = Creem::discounts()->findByCode('SUMMER50');
+
+// Delete a discount code
+$result = Creem::discounts()->delete('disc_123');
 ```
 
 ## Webhooks
@@ -454,6 +557,44 @@ class SubscriptionController extends Controller
 }
 ```
 
+### License Validation Controller
+
+```php
+namespace App\Http\Controllers;
+
+use Romansh\LaravelCreem\Facades\Creem;
+use Illuminate\Http\Request;
+
+class LicenseController extends Controller
+{
+    public function validate(Request $request)
+    {
+        $validated = $request->validate([
+            'license_key' => 'required|string',
+            'instance_id' => 'required|string',
+        ]);
+
+        try {
+            $license = Creem::licenses()->validate(
+                $validated['license_key'],
+                $validated['instance_id']
+            );
+
+            if ($license['status'] === 'active') {
+                return response()->json([
+                    'valid' => true,
+                    'expires_at' => $license['expires_at'],
+                ]);
+            }
+
+            return response()->json(['valid' => false], 403);
+        } catch (\Exception $e) {
+            return response()->json(['valid' => false], 403);
+        }
+    }
+}
+```
+
 ## Advanced Configuration
 
 ### Custom HTTP Settings
@@ -561,7 +702,7 @@ Run Laravel Pint for code formatting:
 
 ## Security
 
-If you discover a security vulnerability, please email security@creem.io.
+If you discover a security vulnerability, please email the package maintainer.
 
 ## License
 
@@ -569,10 +710,5 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 
 ## Support
 
-- **Documentation**: https://docs.creem.io
-- **Discord**: https://discord.gg/creem
-- **Email**: support@creem.io
-
-## Credits
-
-Built and maintained by the Creem team and contributors.
+- **Creem Documentation**: https://docs.creem.io
+- **Package Issues**: https://github.com/romansh/laravel-creem/issues
