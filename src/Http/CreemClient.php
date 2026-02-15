@@ -82,6 +82,16 @@ class CreemClient
     }
 
     /**
+    * Send a DELETE request.
+    */
+    public function delete(string $endpoint, array $data = []): array
+    {
+        $response = $this->client()->delete($endpoint, $data);
+
+        return $this->handleResponse($response);
+    }
+
+    /**
      * Handle the API response.
      *
      * @throws ApiException
