@@ -2,10 +2,10 @@
 
 namespace Romansh\LaravelCreem\Tests\Feature;
 
+use Orchestra\Testbench\TestCase;
 use Romansh\LaravelCreem\Creem;
 use Romansh\LaravelCreem\CreemServiceProvider;
 use Romansh\LaravelCreem\Exceptions\ConfigurationException;
-use Orchestra\Testbench\TestCase;
 
 class ConfigurationTest extends TestCase
 {

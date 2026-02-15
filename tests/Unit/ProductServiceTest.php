@@ -2,10 +2,11 @@
 
 namespace Romansh\LaravelCreem\Tests\Unit;
 
-use Romansh\LaravelCreem\Http\CreemClient;
-use Romansh\LaravelCreem\Services\ProductService;
 use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\TestCase;
+use Romansh\LaravelCreem\CreemServiceProvider;
+use Romansh\LaravelCreem\Http\CreemClient;
+use Romansh\LaravelCreem\Services\ProductService;
 
 class ProductServiceTest extends TestCase
 {
@@ -16,7 +17,15 @@ class ProductServiceTest extends TestCase
         config(['creem.profiles.default' => [
             'api_key' => 'test_api_key',
             'test_mode' => true,
+            'webhook_secret' => 'test_webhook_secret',
         ]]);
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [
+            CreemServiceProvider::class,
+        ];
     }
 
     public function test_can_list_products()
@@ -44,6 +53,26 @@ class ProductServiceTest extends TestCase
         $this->assertCount(2, $result['items']);
     }
 
+    public function test_all_alias_calls_list()
+    {
+        Http::fake([
+            'test-api.creem.io/v1/products/search*' => Http::response([
+                'items' => [
+                    ['id' => 'prod_1', 'name' => 'Product 1'],
+                ],
+                'pagination' => ['total_records' => 1, 'total_pages' => 1, 'current_page' => 1],
+            ], 200),
+        ]);
+
+        $client = CreemClient::fromProfile('default');
+        $service = new ProductService($client);
+
+        $result = $service->all();
+
+        $this->assertArrayHasKey('items', $result);
+        $this->assertCount(1, $result['items']);
+    }
+
     public function test_can_find_product()
     {
         Http::fake([
@@ -66,9 +95,10 @@ class ProductServiceTest extends TestCase
     public function test_can_create_product()
     {
         Http::fake([
-            'test-api.creem.io/v1/products/create' => Http::response([
+            'test-api.creem.io/v1/products' => Http::response([
                 'id' => 'prod_new',
                 'name' => 'New Product',
+                'price' => 1000,
             ], 200),
         ]);
 
@@ -78,8 +108,11 @@ class ProductServiceTest extends TestCase
         $result = $service->create([
             'name' => 'New Product',
             'price' => 1000,
+            'currency' => 'USD',
+            'billing_type' => 'recurring',
         ]);
 
         $this->assertEquals('prod_new', $result['id']);
+        $this->assertEquals('New Product', $result['name']);
     }
 }

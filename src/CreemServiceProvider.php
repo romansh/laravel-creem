@@ -2,8 +2,8 @@
 
 namespace Romansh\LaravelCreem;
 
-use Romansh\LaravelCreem\Console\Commands\TestWebhookCommand;
 use Illuminate\Support\ServiceProvider;
+use Romansh\LaravelCreem\Console\Commands\TestWebhookCommand;
 
 /**
  * Creem Laravel service provider.

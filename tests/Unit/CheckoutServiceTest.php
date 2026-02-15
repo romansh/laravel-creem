@@ -2,10 +2,11 @@
 
 namespace Romansh\LaravelCreem\Tests\Unit;
 
-use Romansh\LaravelCreem\Http\CreemClient;
-use Romansh\LaravelCreem\Services\CheckoutService;
 use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\TestCase;
+use Romansh\LaravelCreem\CreemServiceProvider;
+use Romansh\LaravelCreem\Http\CreemClient;
+use Romansh\LaravelCreem\Services\CheckoutService;
 
 class CheckoutServiceTest extends TestCase
 {
@@ -16,7 +17,15 @@ class CheckoutServiceTest extends TestCase
         config(['creem.profiles.default' => [
             'api_key' => 'test_api_key',
             'test_mode' => true,
+            'webhook_secret' => 'test_webhook_secret',
         ]]);
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [
+            CreemServiceProvider::class,
+        ];
     }
 
     public function test_can_create_checkout()
@@ -39,5 +48,24 @@ class CheckoutServiceTest extends TestCase
 
         $this->assertEquals('checkout_123', $result['id']);
         $this->assertArrayHasKey('checkout_url', $result);
+    }
+
+    public function test_can_find_checkout()
+    {
+        Http::fake([
+            'test-api.creem.io/v1/checkouts*' => Http::response([
+                'id' => 'checkout_123',
+                'checkout_url' => 'https://checkout.creem.io/checkout_123',
+                'status' => 'completed',
+            ], 200),
+        ]);
+
+        $client = CreemClient::fromProfile('default');
+        $service = new CheckoutService($client);
+
+        $result = $service->find('checkout_123');
+
+        $this->assertEquals('checkout_123', $result['id']);
+        $this->assertEquals('completed', $result['status']);
     }
 }

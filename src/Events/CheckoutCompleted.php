@@ -10,7 +10,8 @@ use Illuminate\Queue\SerializesModels;
  */
 class CheckoutCompleted
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
     /**
      * The webhook payload.

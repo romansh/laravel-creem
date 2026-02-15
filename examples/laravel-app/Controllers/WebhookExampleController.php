@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Romansh\LaravelCreem\Events\CheckoutCompleted;
 use Romansh\LaravelCreem\Events\SubscriptionCanceled;
-use Illuminate\Http\Request;
 
 /**
  * Example custom webhook handler using Laravel event listeners.

@@ -2,10 +2,10 @@
 
 namespace Romansh\LaravelCreem\Tests\Feature;
 
-use Romansh\LaravelCreem\CreemServiceProvider;
-use Romansh\LaravelCreem\Events\CheckoutCompleted;
 use Illuminate\Support\Facades\Event;
 use Orchestra\Testbench\TestCase;
+use Romansh\LaravelCreem\CreemServiceProvider;
+use Romansh\LaravelCreem\Events\CheckoutCompleted;
 
 class WebhookTest extends TestCase
 {

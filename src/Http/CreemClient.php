@@ -2,11 +2,11 @@
 
 namespace Romansh\LaravelCreem\Http;
 
-use Romansh\LaravelCreem\Exceptions\ApiException;
-use Romansh\LaravelCreem\Exceptions\ConfigurationException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Romansh\LaravelCreem\Exceptions\ApiException;
+use Romansh\LaravelCreem\Exceptions\ConfigurationException;
 
 /**
  * HTTP client wrapper for Creem API requests.

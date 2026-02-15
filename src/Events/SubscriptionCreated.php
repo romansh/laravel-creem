@@ -10,7 +10,8 @@ use Illuminate\Queue\SerializesModels;
  */
 class SubscriptionCreated
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
     /**
      * The webhook payload.

@@ -2,13 +2,13 @@
 
 namespace Romansh\LaravelCreem\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Romansh\LaravelCreem\Events\CheckoutCompleted;
 use Romansh\LaravelCreem\Events\PaymentFailed;
 use Romansh\LaravelCreem\Events\SubscriptionCanceled;
 use Romansh\LaravelCreem\Events\SubscriptionCreated;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Controller for handling Creem webhook events.

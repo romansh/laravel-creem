@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Romansh\LaravelCreem\Facades\Creem;
 use Illuminate\Http\Request;
+use Romansh\LaravelCreem\Facades\Creem;
 
 /**
  * Example controller showing how to create checkouts with Creem.
