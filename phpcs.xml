@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<ruleset name="LaravelCreem PHP Compatibility">
+    <description>PHP compatibility checks for the package</description>
+    
+    <!-- What to scan -->
+    <file>src</file>
+    <file>config</file>
+
+    <!-- Exclude vendor and tests -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>tests/*</exclude-pattern>
+
+    <!-- PHPCompatibility rules -->
+    <rule ref="PHPCompatibility">
+        <config name="testVersion" value="8.1-8.99"/>
+    </rule>
+
+    <!-- Ignore warnings, only errors -->
+    <arg value="n"/>
+</ruleset>
+
