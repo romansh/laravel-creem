@@ -2,27 +2,12 @@
 
 namespace Romansh\LaravelCreem\Events;
 
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
-
 /**
- * Event fired when a payment fails.
+ * Fired when a payment fails for a subscription or transaction.
+ *
+ * Corresponds to the "payment.failed" Creem webhook event.
  */
-class PaymentFailed
+class PaymentFailed extends CreemEvent
 {
-    use Dispatchable;
-    use SerializesModels;
-
-    /**
-     * The webhook payload.
-     */
-    public array $payload;
-
-    /**
-     * Create a new event instance.
-     */
-    public function __construct(array $payload)
-    {
-        $this->payload = $payload;
-    }
+    //
 }

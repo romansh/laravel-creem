@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Log;
 use Orchestra\Testbench\TestCase;
 use Romansh\LaravelCreem\CreemServiceProvider;
 use Romansh\LaravelCreem\Events\CheckoutCompleted;
+use Romansh\LaravelCreem\Events\GrantAccess;
 use Romansh\LaravelCreem\Events\PaymentFailed;
+use Romansh\LaravelCreem\Events\RevokeAccess;
 use Romansh\LaravelCreem\Events\SubscriptionCanceled;
 use Romansh\LaravelCreem\Events\SubscriptionCreated;
 
@@ -45,6 +47,7 @@ class WebhookControllerTest extends TestCase
 
         $response->assertStatus(200);
         Event::assertDispatched(CheckoutCompleted::class);
+        Event::assertDispatched(GrantAccess::class);
     }
 
     public function test_webhook_dispatches_subscription_created_event()
@@ -73,6 +76,7 @@ class WebhookControllerTest extends TestCase
         ]);
 
         Event::assertDispatched(SubscriptionCanceled::class);
+        Event::assertDispatched(RevokeAccess::class);
     }
 
     public function test_webhook_dispatches_payment_failed_event()

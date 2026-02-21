@@ -336,14 +336,43 @@ https://yourdomain.com/creem/webhook
 
 ### Webhook Events
 
-The package dispatches Laravel events for all webhook types:
+The package dispatches Laravel events for all Creem webhook types. Each webhook is mapped
+to a corresponding event class under `Romansh\LaravelCreem\Events`. All Creem webhook
+events extend `CreemEvent` and expose the following typed properties:
 
-```php
-use Romansh\LaravelCreem\Events\CheckoutCompleted;
-use Romansh\LaravelCreem\Events\SubscriptionCreated;
-use Romansh\LaravelCreem\Events\SubscriptionCanceled;
-use Romansh\LaravelCreem\Events\PaymentFailed;
-```
+- `$eventId` — unique Creem event id
+- `$eventType` — the original event string (e.g. `checkout.completed`)
+- `$createdAt` — unix timestamp in milliseconds
+- `$object` — the decoded Creem resource object
+- `$payload` — the full raw webhook payload
+
+Common webhook event classes provided by the package include:
+
+- `CheckoutCompleted`
+- `DisputeCreated`
+- `RefundCreated`
+- `PaymentFailed`
+- `SubscriptionCreated`
+- `SubscriptionActive`
+- `SubscriptionPaid`
+- `SubscriptionCanceled`
+- `SubscriptionExpired`
+- `SubscriptionPastDue`
+- `SubscriptionPaused`
+- `SubscriptionTrialing`
+- `SubscriptionScheduledCancel`
+- `SubscriptionUpdate`
+
+Additionally the package emits two application-level events to simplify access
+provisioning logic:
+
+- `GrantAccess` — dispatched automatically after `checkout.completed` and `subscription.paid`.
+  It receives `(array $customer, array $metadata, array $payload)` where `$customer` is the
+  Creem customer object and `$metadata` is merchant-defined metadata from the originating
+  resource.
+
+- `RevokeAccess` — dispatched automatically after `subscription.canceled` and `subscription.expired`.
+  It also receives `(array $customer, array $metadata, array $payload)`.
 
 ### Listening to Events
 
@@ -358,32 +387,39 @@ protected $listen = [
     \Romansh\LaravelCreem\Events\SubscriptionCanceled::class => [
         \App\Listeners\RevokeUserAccess::class,
     ],
+    // Listen for application-level access events as well
+    \Romansh\LaravelCreem\Events\GrantAccess::class => [
+        \App\Listeners\ProvisionUserAccess::class,
+    ],
+    \Romansh\LaravelCreem\Events\RevokeAccess::class => [
+        \App\Listeners\RevokeUserAccess::class,
+    ],
 ];
 ```
 
-Create a listener:
+Create a listener example:
 
 ```php
 namespace App\Listeners;
 
-use Romansh\LaravelCreem\Events\CheckoutCompleted;
+use Romansh\LaravelCreem\Events\GrantAccess;
 
-class SendPurchaseConfirmation
+class ProvisionUserAccess
 {
-    public function handle(CheckoutCompleted $event)
+    public function handle(GrantAccess $event)
     {
-        $checkout = $event->payload['data'];
-        $email = $checkout['customer']['email'];
-        
-        // Send confirmation email
-        // Mail::to($email)->send(new PurchaseConfirmation($checkout));
+        $customer = $event->customer;
+        $metadata = $event->metadata;
+
+        // Use metadata (e.g. referenceId) to find internal user and provision access
+        // $userId = $metadata['referenceId'] ?? null;
     }
 }
 ```
 
 ### Custom Webhook Handling
 
-You can also create a custom webhook controller:
+You can also create a custom webhook controller and apply the `VerifyCreemWebhook` middleware:
 
 ```php
 namespace App\Http\Controllers;

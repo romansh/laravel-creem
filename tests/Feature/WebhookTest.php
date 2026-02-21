@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Event;
 use Orchestra\Testbench\TestCase;
 use Romansh\LaravelCreem\CreemServiceProvider;
 use Romansh\LaravelCreem\Events\CheckoutCompleted;
+use Romansh\LaravelCreem\Events\GrantAccess;
 
 class WebhookTest extends TestCase
 {
@@ -83,5 +84,6 @@ class WebhookTest extends TestCase
         ]);
 
         Event::assertDispatched(CheckoutCompleted::class);
+        Event::assertDispatched(GrantAccess::class);
     }
 }

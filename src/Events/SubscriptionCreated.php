@@ -2,27 +2,12 @@
 
 namespace Romansh\LaravelCreem\Events;
 
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
-
 /**
- * Event fired when a subscription is created.
+ * Fired when a subscription is created in Creem.
+ *
+ * Corresponds to the "subscription.created" Creem webhook event.
  */
-class SubscriptionCreated
+class SubscriptionCreated extends CreemEvent
 {
-    use Dispatchable;
-    use SerializesModels;
-
-    /**
-     * The webhook payload.
-     */
-    public array $payload;
-
-    /**
-     * Create a new event instance.
-     */
-    public function __construct(array $payload)
-    {
-        $this->payload = $payload;
-    }
+    //
 }
