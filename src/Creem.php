@@ -5,8 +5,11 @@ namespace Romansh\LaravelCreem;
 use Romansh\LaravelCreem\Http\CreemClient;
 use Romansh\LaravelCreem\Services\CheckoutService;
 use Romansh\LaravelCreem\Services\CustomerService;
+use Romansh\LaravelCreem\Services\DiscountService;
+use Romansh\LaravelCreem\Services\LicenseService;
 use Romansh\LaravelCreem\Services\ProductService;
 use Romansh\LaravelCreem\Services\SubscriptionService;
+use Romansh\LaravelCreem\Services\TransactionService;
 
 /**
  * Main entry point for interacting with the Creem API.
@@ -86,5 +89,29 @@ class Creem
     public function subscriptions(): SubscriptionService
     {
         return new SubscriptionService($this->client);
+    }
+
+    /**
+     * Get the discount service.
+     */
+    public function discounts(): DiscountService
+    {
+        return new DiscountService($this->client);
+    }
+
+    /**
+     * Get the license service.
+     */
+    public function licenses(): LicenseService
+    {
+        return new LicenseService($this->client);
+    }
+
+    /**
+     * Get the transaction service.
+     */
+    public function transactions(): TransactionService
+    {
+        return new TransactionService($this->client);
     }
 }

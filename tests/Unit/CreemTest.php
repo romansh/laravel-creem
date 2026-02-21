@@ -7,8 +7,11 @@ use Romansh\LaravelCreem\Creem;
 use Romansh\LaravelCreem\Http\CreemClient;
 use Romansh\LaravelCreem\Services\CheckoutService;
 use Romansh\LaravelCreem\Services\CustomerService;
+use Romansh\LaravelCreem\Services\DiscountService;
+use Romansh\LaravelCreem\Services\LicenseService;
 use Romansh\LaravelCreem\Services\ProductService;
 use Romansh\LaravelCreem\Services\SubscriptionService;
+use Romansh\LaravelCreem\Services\TransactionService;
 
 class CreemTest extends TestCase
 {
@@ -57,5 +60,8 @@ class CreemTest extends TestCase
         $this->assertInstanceOf(CheckoutService::class, $creem->checkouts());
         $this->assertInstanceOf(CustomerService::class, $creem->customers());
         $this->assertInstanceOf(SubscriptionService::class, $creem->subscriptions());
+        $this->assertInstanceOf(DiscountService::class, $creem->discounts());
+        $this->assertInstanceOf(LicenseService::class, $creem->licenses());
+        $this->assertInstanceOf(TransactionService::class, $creem->transactions());
     }
 }
