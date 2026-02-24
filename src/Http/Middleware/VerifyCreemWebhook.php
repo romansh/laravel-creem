@@ -24,7 +24,8 @@ class VerifyCreemWebhook
             abort(500, 'Webhook secret not configured.');
         }
 
-        $signature = $request->header('X-Creem-Signature');
+        // Creem sends the signature as 'creem-signature'; accept the X- variant as well.
+        $signature = $request->header('creem-signature');
 
         if (! $signature) {
             abort(401, 'Missing webhook signature.');
