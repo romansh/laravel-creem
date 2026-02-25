@@ -30,6 +30,11 @@ class CreemServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Skip booting during package discovery to avoid cache path issues
+        if (! $this->app->bound('path.config')) {
+            return;
+        }
+
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/creem.php' => config_path('creem.php'),
