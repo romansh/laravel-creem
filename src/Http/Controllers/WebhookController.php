@@ -33,7 +33,7 @@ class WebhookController extends Controller
     public function __invoke(Request $request)
     {
         $payload = $request->all();
-        $event = $payload['event'] ?? null;
+        $event = $payload['eventType'] ?? $payload['event'] ?? null;
 
         if (! $event) {
             Log::warning('Creem webhook received without event type', $payload);
