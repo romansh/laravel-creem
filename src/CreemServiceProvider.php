@@ -30,11 +30,6 @@ class CreemServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Skip booting during package discovery to avoid cache path issues
-        if (! $this->app->bound('path.config')) {
-            return;
-        }
-
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/creem.php' => config_path('creem.php'),
@@ -43,8 +38,22 @@ class CreemServiceProvider extends ServiceProvider
             $this->commands([
                 TestWebhookCommand::class,
             ]);
+            
+            // Skip route loading during package discovery to prevent cache initialization errors
+            if ($this->isPackageDiscovery()) {
+                return;
+            }
         }
 
         $this->loadRoutesFrom(__DIR__.'/../routes/webhooks.php');
+    }
+
+    /**
+     * Check if we're running package:discover command.
+     */
+    protected function isPackageDiscovery(): bool
+    {
+        return isset($_SERVER['argv']) && 
+               in_array('package:discover', $_SERVER['argv'], true);
     }
 }
