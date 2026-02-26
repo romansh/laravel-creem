@@ -95,4 +95,43 @@ class CreemServiceProviderTest extends TestCase
 
         $this->assertTrue($hasWebhookRoute, 'Creem webhook routes were not loaded.');
     }
+
+    /**
+     * Test isPackageDiscovery returns false when package:discover is not in argv.
+     */
+    public function test_is_package_discovery_returns_false_normally()
+    {
+        $provider = new CreemServiceProvider($this->app);
+        $method = new \ReflectionMethod($provider, 'isPackageDiscovery');
+        $method->setAccessible(true);
+
+        $this->assertFalse($method->invoke($provider));
+    }
+
+    /**
+     * Test isPackageDiscovery returns true and boot() skips route loading
+     * when package:discover is in argv.
+     */
+    public function test_boot_skips_routes_during_package_discovery()
+    {
+        $originalArgv = $_SERVER['argv'] ?? [];
+        $_SERVER['argv'] = ['artisan', 'package:discover', '--ansi'];
+
+        try {
+            $provider = new CreemServiceProvider($this->app);
+            $method = new \ReflectionMethod($provider, 'isPackageDiscovery');
+            $method->setAccessible(true);
+
+            $this->assertTrue($method->invoke($provider));
+
+            // Boot with package:discover in argv — should return early without loading routes
+            $routesBefore = count($this->app['router']->getRoutes());
+            $provider->boot();
+            $routesAfter = count($this->app['router']->getRoutes());
+
+            $this->assertEquals($routesBefore, $routesAfter, 'Routes should not be loaded during package:discover');
+        } finally {
+            $_SERVER['argv'] = $originalArgv;
+        }
+    }
 }
