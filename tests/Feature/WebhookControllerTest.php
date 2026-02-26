@@ -38,11 +38,11 @@ class WebhookControllerTest extends TestCase
     {
         Event::fake();
 
-        $payload = ['event' => 'checkout.completed', 'data' => ['id' => 'checkout_123']];
+        $payload = ['eventType' => 'checkout.completed', 'data' => ['id' => 'checkout_123']];
         $signature = hash_hmac('sha256', json_encode($payload), 'test_webhook_secret');
 
         $response = $this->postJson('/creem/webhook', $payload, [
-            'X-Creem-Signature' => $signature,
+            'creem-signature' => $signature,
         ]);
 
         $response->assertStatus(200);
@@ -54,11 +54,11 @@ class WebhookControllerTest extends TestCase
     {
         Event::fake();
 
-        $payload = ['event' => 'subscription.created', 'data' => ['id' => 'sub_123']];
+        $payload = ['eventType' => 'subscription.created', 'data' => ['id' => 'sub_123']];
         $signature = hash_hmac('sha256', json_encode($payload), 'test_webhook_secret');
 
         $this->postJson('/creem/webhook', $payload, [
-            'X-Creem-Signature' => $signature,
+            'creem-signature' => $signature,
         ]);
 
         Event::assertDispatched(SubscriptionCreated::class);
@@ -68,11 +68,11 @@ class WebhookControllerTest extends TestCase
     {
         Event::fake();
 
-        $payload = ['event' => 'subscription.canceled', 'data' => ['id' => 'sub_123']];
+        $payload = ['eventType' => 'subscription.canceled', 'data' => ['id' => 'sub_123']];
         $signature = hash_hmac('sha256', json_encode($payload), 'test_webhook_secret');
 
         $this->postJson('/creem/webhook', $payload, [
-            'X-Creem-Signature' => $signature,
+            'creem-signature' => $signature,
         ]);
 
         Event::assertDispatched(SubscriptionCanceled::class);
@@ -83,11 +83,11 @@ class WebhookControllerTest extends TestCase
     {
         Event::fake();
 
-        $payload = ['event' => 'payment.failed', 'data' => ['id' => 'txn_123']];
+        $payload = ['eventType' => 'payment.failed', 'data' => ['id' => 'txn_123']];
         $signature = hash_hmac('sha256', json_encode($payload), 'test_webhook_secret');
 
         $this->postJson('/creem/webhook', $payload, [
-            'X-Creem-Signature' => $signature,
+            'creem-signature' => $signature,
         ]);
 
         Event::assertDispatched(PaymentFailed::class);
@@ -99,11 +99,11 @@ class WebhookControllerTest extends TestCase
         Log::spy();
 
         $controller = new \Romansh\LaravelCreem\Http\Controllers\WebhookController();
-        $request = new Request(['event' => 'unknown.event', 'data' => []]);
+        $request = new Request(['eventType' => 'unknown.event', 'data' => []]);
         $controller($request);
 
         Log::shouldHaveReceived('info')
-            ->with('Unhandled Creem webhook event: unknown.event', ['event' => 'unknown.event', 'data' => []]);
+            ->with('Unhandled Creem webhook event: unknown.event', ['eventType' => 'unknown.event', 'data' => []]);
     }
 
     public function test_returns_400_if_event_missing()
@@ -118,9 +118,9 @@ class WebhookControllerTest extends TestCase
     // Проверка отклонения запроса с неверной подписью
     public function test_webhook_rejects_invalid_signature()
     {
-        $payload = ['event' => 'checkout.completed', 'data' => ['id' => 'checkout_123']];
+        $payload = ['eventType' => 'checkout.completed', 'data' => ['id' => 'checkout_123']];
         $response = $this->postJson('/creem/webhook', $payload, [
-            'X-Creem-Signature' => 'invalid_signature',
+            'creem-signature' => 'invalid_signature',
         ]);
 
         $response->assertStatus(403);
@@ -128,7 +128,7 @@ class WebhookControllerTest extends TestCase
 
     public function test_webhook_rejects_missing_signature()
     {
-        $payload = ['event' => 'checkout.completed', 'data' => ['id' => 'checkout_123']];
+        $payload = ['eventType' => 'checkout.completed', 'data' => ['id' => 'checkout_123']];
         $response = $this->postJson('/creem/webhook', $payload);
 
         $response->assertStatus(401);

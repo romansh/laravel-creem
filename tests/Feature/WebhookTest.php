@@ -29,14 +29,14 @@ class WebhookTest extends TestCase
     public function test_webhook_verifies_signature()
     {
         $payload = json_encode([
-            'event' => 'checkout.completed',
+            'eventType' => 'checkout.completed',
             'data' => ['id' => 'checkout_123'],
         ]);
 
         $signature = hash_hmac('sha256', $payload, 'test_webhook_secret');
 
         $response = $this->postJson('/creem/webhook', json_decode($payload, true), [
-            'X-Creem-Signature' => $signature,
+            'creem-signature' => $signature,
         ]);
 
         $response->assertStatus(200);
@@ -45,12 +45,12 @@ class WebhookTest extends TestCase
     public function test_webhook_rejects_invalid_signature()
     {
         $payload = [
-            'event' => 'checkout.completed',
+            'eventType' => 'checkout.completed',
             'data' => ['id' => 'checkout_123'],
         ];
 
         $response = $this->postJson('/creem/webhook', $payload, [
-            'X-Creem-Signature' => 'invalid_signature',
+            'creem-signature' => 'invalid_signature',
         ]);
 
         $response->assertStatus(403);
@@ -59,7 +59,7 @@ class WebhookTest extends TestCase
     public function test_webhook_rejects_missing_signature()
     {
         $payload = [
-            'event' => 'checkout.completed',
+            'eventType' => 'checkout.completed',
             'data' => ['id' => 'checkout_123'],
         ];
 
@@ -73,14 +73,14 @@ class WebhookTest extends TestCase
         Event::fake();
 
         $payload = json_encode([
-            'event' => 'checkout.completed',
+            'eventType' => 'checkout.completed',
             'data' => ['id' => 'checkout_123'],
         ]);
 
         $signature = hash_hmac('sha256', $payload, 'test_webhook_secret');
 
         $this->postJson('/creem/webhook', json_decode($payload, true), [
-            'X-Creem-Signature' => $signature,
+            'creem-signature' => $signature,
         ]);
 
         Event::assertDispatched(CheckoutCompleted::class);

@@ -19,14 +19,14 @@ class VerifyCreemWebhookTest extends TestCase
 
     public function test_handle_passes_with_valid_signature()
     {
-        $payload = json_encode(['event' => 'checkout.completed']);
+        $payload = json_encode(['eventType' => 'checkout.completed']);
         $secret = 'test_secret';
         $signature = hash_hmac('sha256', $payload, $secret);
 
         config(['creem.profiles.default.webhook_secret' => $secret]);
 
         $request = Request::create('/webhook', 'POST', [], [], [], [], $payload);
-        $request->headers->set('X-Creem-Signature', $signature);
+        $request->headers->set('creem-signature', $signature);
 
         $response = $this->middleware->handle($request, function ($req) {
             return response('next called', 200);
@@ -64,9 +64,9 @@ class VerifyCreemWebhookTest extends TestCase
     {
         config(['creem.profiles.default.webhook_secret' => 'test_secret']);
 
-        $payload = json_encode(['event' => 'checkout.completed']);
+        $payload = json_encode(['eventType' => 'checkout.completed']);
         $request = Request::create('/webhook', 'POST', [], [], [], [], $payload);
-        $request->headers->set('X-Creem-Signature', 'invalid_hash');
+        $request->headers->set('creem-signature', 'invalid_hash');
 
         $this->expectException(HttpException::class);
         $this->expectExceptionMessage('Invalid webhook signature.');
@@ -79,14 +79,14 @@ class VerifyCreemWebhookTest extends TestCase
      */
     public function test_handle_works_with_custom_profile()
     {
-        $payload = json_encode(['event' => 'test']);
+        $payload = json_encode(['eventType' => 'test']);
         $secret = 'custom_secret';
         $signature = hash_hmac('sha256', $payload, $secret);
 
         config(['creem.profiles.billing.webhook_secret' => $secret]);
 
         $request = Request::create('/webhook', 'POST', [], [], [], [], $payload);
-        $request->headers->set('X-Creem-Signature', $signature);
+        $request->headers->set('creem-signature', $signature);
 
         $response = $this->middleware->handle($request, function ($req) {
             return response('success');
