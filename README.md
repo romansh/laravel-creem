@@ -45,6 +45,21 @@ CREEM_TEST_MODE=false
 CREEM_WEBHOOK_SECRET=your_webhook_secret_here
 ```
 
+## Demo Application
+
+A full-featured demo app is available as a separate package: [romansh/laravel-creem-demo](https://github.com/romansh/laravel-creem-demo)
+
+```bash
+composer create-project romansh/laravel-creem-demo my-creem-app
+cd my-creem-app
+cp .env.example .env
+docker-compose up -d
+```
+
+Open **http://localhost/creem-demo** — configure API keys, webhook secret, and webhook URL directly in the browser. No `.env` editing required.
+
+The demo covers products, subscriptions, checkouts, discounts, transactions, and webhook event handling with live logs. Docker setup includes optional Cloudflare Tunnel for webhook testing.
+
 ## Configuration
 
 The package supports multiple configuration profiles. Open `config/creem.php` to configure:
@@ -720,21 +735,6 @@ Creem profile 'xyz' not found in configuration.
 ```
 
 Solution: Add the profile to `config/creem.php` or use an existing profile name.
-
-## Demo Application
-
-A full-featured demo app is available as a separate package: [romansh/laravel-creem-demo](https://github.com/romansh/laravel-creem-demo)
-
-```bash
-composer create-project romansh/laravel-creem-demo my-creem-app
-cd my-creem-app
-composer run setup
-php artisan serve
-```
-
-Open **http://localhost:8000/creem-demo** — configure API keys, webhook secret, and webhook URL directly in the browser. No `.env` editing required.
-
-The demo covers products, subscriptions, checkouts, discounts, transactions, and webhook event handling with live logs.
 
 ## Contributing
 
