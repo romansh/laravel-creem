@@ -51,6 +51,35 @@ class ProductServiceTest extends TestCase
 
         $this->assertArrayHasKey('items', $result);
         $this->assertCount(2, $result['items']);
+        $this->assertSame(2, $result['total']);
+    }
+
+    public function test_list_passes_filters_to_products_search(): void
+    {
+        Http::fake([
+            'test-api.creem.io/v1/products/search*' => Http::response([
+                'items' => [],
+                'pagination' => ['total_records' => 0, 'total_pages' => 0, 'current_page' => 1],
+            ], 200),
+        ]);
+
+        $client = CreemClient::fromProfile('default');
+        $service = new ProductService($client);
+
+        $service->list(2, 15, [
+            'status' => 'active',
+            'billing_type' => 'recurring',
+        ]);
+
+        Http::assertSent(function ($request) {
+            $data = $request->data();
+
+            return str_contains($request->url(), '/products/search')
+                && ($data['status'] ?? null) === 'active'
+                && ($data['billing_type'] ?? null) === 'recurring'
+                && ($data['page_number'] ?? null) === 2
+                && ($data['page_size'] ?? null) === 15;
+        });
     }
 
     public function test_all_alias_calls_list()

@@ -3,6 +3,7 @@
 namespace Romansh\LaravelCreem\Services;
 
 use Romansh\LaravelCreem\Http\CreemClient;
+use Romansh\LaravelCreem\Services\Concerns\NormalizesPaginatedResponses;
 
 /**
  * Service for managing Creem transactions.
@@ -12,6 +13,8 @@ use Romansh\LaravelCreem\Http\CreemClient;
  */
 class TransactionService
 {
+    use NormalizesPaginatedResponses;
+
     /**
      * The HTTP client instance.
      */
@@ -60,10 +63,13 @@ class TransactionService
      */
     public function list(array $filters = [], int $page = 1, int $pageSize = 20): array
     {
-        return $this->client->get('/transactions/search', array_merge($filters, [
-            'page_number' => $page,
-            'page_size' => $pageSize,
-        ]));
+        return $this->normalizePaginatedResponse($this->client->get('/transactions/search', array_merge(
+            array_filter($filters, static fn ($value) => $value !== null && $value !== ''),
+            [
+                'page_number' => $page,
+                'page_size' => $pageSize,
+            ]
+        )));
     }
 
     /**

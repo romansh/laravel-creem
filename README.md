@@ -160,6 +160,12 @@ $product = Creem::products()->find('prod_123');
 
 // List products (paginated)
 $products = Creem::products()->list($page = 1, $pageSize = 20);
+
+// List products with filters
+$products = Creem::products()->list($page = 1, $pageSize = 20, [
+    'status' => 'active',
+    'billing_type' => 'recurring',
+]);
 ```
 
 ### Checkouts
@@ -202,6 +208,9 @@ $customer = Creem::customers()->findByEmail('user@example.com');
 // List customers (paginated)
 $customers = Creem::customers()->list($page = 1, $pageSize = 20);
 
+// Convenience total alias derived from pagination.total_records
+$totalCustomers = $customers['total'];
+
 // Generate customer portal link
 $portalLink = Creem::customers()->createPortalLink('cust_123');
 return redirect($portalLink);
@@ -217,6 +226,12 @@ $subscription = Creem::subscriptions()->find('sub_123');
 
 // List subscriptions
 $subscriptions = Creem::subscriptions()->list($page = 1, $limit = 20);
+
+// List subscriptions with filters
+$subscriptions = Creem::subscriptions()->list($page = 1, $limit = 20, [
+    'status' => 'active',
+    'customer_id' => 'cust_123',
+]);
 
 // Cancel a subscription
 $subscription = Creem::subscriptions()->cancel('sub_123');
@@ -255,7 +270,11 @@ $transactions = Creem::transactions()->list([], $page = 1, $pageSize = 20);
 $transactions = Creem::transactions()->list([
     'customer_id' => 'cust_123',
     'product_id' => 'prod_456',
+    'order_id' => 'ord_789',
 ], $page = 1, $pageSize = 20);
+
+// Convenience total alias derived from pagination.total_records
+$totalTransactions = $transactions['total'];
 
 // Get transactions for a specific customer
 $transactions = Creem::transactions()->byCustomer('cust_123');

@@ -87,6 +87,33 @@ class CustomerServiceTest extends TestCase
 
         $this->assertArrayHasKey('items', $result);
         $this->assertCount(2, $result['items']);
+        $this->assertSame(2, $result['total']);
+    }
+
+    public function test_list_passes_filters_to_customer_search(): void
+    {
+        Http::fake([
+            'test-api.creem.io/v1/customers/list*' => Http::response([
+                'items' => [],
+                'pagination' => ['total_records' => 0, 'total_pages' => 0, 'current_page' => 1],
+            ], 200),
+        ]);
+
+        $client = CreemClient::fromProfile('default');
+        $service = new CustomerService($client);
+
+        $service->list(3, 25, [
+            'email' => 'user@example.com',
+        ]);
+
+        Http::assertSent(function ($request) {
+            $data = $request->data();
+
+            return str_contains($request->url(), '/customers/list')
+                && ($data['email'] ?? null) === 'user@example.com'
+                && ($data['page_number'] ?? null) === 3
+                && ($data['page_size'] ?? null) === 25;
+        });
     }
 
     public function test_all_alias_calls_list()

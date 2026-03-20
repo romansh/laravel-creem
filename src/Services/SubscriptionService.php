@@ -3,6 +3,7 @@
 namespace Romansh\LaravelCreem\Services;
 
 use Romansh\LaravelCreem\Http\CreemClient;
+use Romansh\LaravelCreem\Services\Concerns\NormalizesPaginatedResponses;
 
 /**
  * Service for managing Creem subscriptions.
@@ -16,6 +17,8 @@ use Romansh\LaravelCreem\Http\CreemClient;
  */
 class SubscriptionService
 {
+    use NormalizesPaginatedResponses;
+
     /**
      * The HTTP client instance.
      */
@@ -34,18 +37,21 @@ class SubscriptionService
     /**
      * List all subscriptions.
      *
-     * @see https://docs.creem.io/api-reference/endpoint/list-subscriptions
+    * @see https://docs.creem.io/api-reference/endpoint/search-subscriptions
      *
      * @param int $page
      * @param int $limit
      * @return array<string, mixed>
      */
-    public function list(int $page = 1, int $limit = 20): array
+    public function list(int $page = 1, int $limit = 20, array $filters = []): array
     {
-        return $this->client->get('/subscriptions', [
-            'page' => $page,
-            'limit' => $limit,
-        ]);
+        return $this->normalizePaginatedResponse($this->client->get('/subscriptions/search', array_merge(
+            array_filter($filters, static fn ($value) => $value !== null && $value !== ''),
+            [
+                'page_number' => $page,
+                'page_size' => $limit,
+            ]
+        )));
     }
 
     /**
@@ -77,7 +83,8 @@ class SubscriptionService
     public function cancel(string $subscriptionId, bool $atPeriodEnd = true): array
     {
         return $this->client->post("/subscriptions/{$subscriptionId}/cancel", [
-            'at_period_end' => $atPeriodEnd,
+            'mode' => $atPeriodEnd ? 'scheduled' : 'immediate',
+            'onExecute' => 'cancel',
         ]);
     }
 

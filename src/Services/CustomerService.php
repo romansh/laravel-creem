@@ -3,6 +3,7 @@
 namespace Romansh\LaravelCreem\Services;
 
 use Romansh\LaravelCreem\Http\CreemClient;
+use Romansh\LaravelCreem\Services\Concerns\NormalizesPaginatedResponses;
 
 /**
  * Service for managing Creem customers.
@@ -13,6 +14,8 @@ use Romansh\LaravelCreem\Http\CreemClient;
  */
 class CustomerService
 {
+    use NormalizesPaginatedResponses;
+
     /**
      * The HTTP client instance.
      */
@@ -75,14 +78,18 @@ class CustomerService
      *
      * @param int $page The page number (default: 1)
      * @param int $pageSize The page size (default: 20)
+     * @param array<string, mixed> $filters Optional filters supported by Creem
      * @return array<string, mixed> Returns items and pagination data
      */
-    public function list(int $page = 1, int $pageSize = 20): array
+    public function list(int $page = 1, int $pageSize = 20, array $filters = []): array
     {
-        return $this->client->get('/customers/list', [
-            'page_number' => $page,
-            'page_size' => $pageSize,
-        ]);
+        return $this->normalizePaginatedResponse($this->client->get('/customers/list', array_merge(
+            array_filter($filters, static fn ($value) => $value !== null && $value !== ''),
+            [
+                'page_number' => $page,
+                'page_size' => $pageSize,
+            ]
+        )));
     }
 
     /**
@@ -90,11 +97,12 @@ class CustomerService
      *
      * @param int $page The page number (default: 1)
      * @param int $pageSize The page size (default: 20)
+     * @param array<string, mixed> $filters Optional filters supported by Creem
      * @return array<string, mixed> Returns items and pagination data
      */
-    public function all(int $page = 1, int $pageSize = 20): array
+    public function all(int $page = 1, int $pageSize = 20, array $filters = []): array
     {
-        return $this->list($page, $pageSize);
+        return $this->list($page, $pageSize, $filters);
     }
 
     /**

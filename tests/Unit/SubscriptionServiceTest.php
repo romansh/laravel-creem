@@ -31,7 +31,7 @@ class SubscriptionServiceTest extends TestCase
     public function test_can_list_subscriptions()
     {
         Http::fake([
-            'test-api.creem.io/v1/subscriptions*' => Http::response([
+            'test-api.creem.io/v1/subscriptions/search*' => Http::response([
                 'items' => [
                     ['id' => 'sub_1', 'status' => 'active'],
                     ['id' => 'sub_2', 'status' => 'active'],
@@ -51,6 +51,39 @@ class SubscriptionServiceTest extends TestCase
 
         $this->assertArrayHasKey('items', $result);
         $this->assertCount(2, $result['items']);
+        $this->assertSame(2, $result['total']);
+    }
+
+    public function test_list_uses_search_endpoint_and_passes_filters(): void
+    {
+        Http::fake([
+            'test-api.creem.io/v1/subscriptions/search*' => Http::response([
+                'items' => [
+                    ['id' => 'sub_1', 'status' => 'past_due'],
+                ],
+                'pagination' => ['total_records' => 1, 'total_pages' => 1, 'current_page' => 2],
+            ], 200),
+        ]);
+
+        $client = CreemClient::fromProfile('default');
+        $service = new SubscriptionService($client);
+
+        $result = $service->list(2, 10, [
+            'status' => 'past_due',
+            'customer_id' => 'cust_123',
+        ]);
+
+        Http::assertSent(function ($request) {
+            $data = $request->data();
+
+            return str_contains($request->url(), '/subscriptions/search')
+                && ($data['status'] ?? null) === 'past_due'
+                && ($data['customer_id'] ?? null) === 'cust_123'
+                && ($data['page_number'] ?? null) === 2
+                && ($data['page_size'] ?? null) === 10;
+        });
+
+        $this->assertSame(1, $result['total']);
     }
 
     public function test_can_find_subscription()
@@ -84,6 +117,12 @@ class SubscriptionServiceTest extends TestCase
         $service = new SubscriptionService($client);
 
         $result = $service->cancel('sub_123');
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/subscriptions/sub_123/cancel')
+                && ($request['mode'] ?? null) === 'scheduled'
+                && ($request['onExecute'] ?? null) === 'cancel';
+        });
 
         $this->assertEquals('canceled', $result['status']);
     }

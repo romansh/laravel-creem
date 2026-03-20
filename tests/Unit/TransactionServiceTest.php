@@ -71,6 +71,7 @@ class TransactionServiceTest extends TestCase
 
         $this->assertArrayHasKey('items', $result);
         $this->assertCount(2, $result['items']);
+        $this->assertSame(2, $result['total']);
     }
 
     public function test_all_alias_calls_list()
@@ -115,6 +116,48 @@ class TransactionServiceTest extends TestCase
 
         $this->assertArrayHasKey('items', $result);
         $this->assertCount(1, $result['items']);
+        $this->assertSame(1, $result['total']);
+    }
+
+    public function test_list_normalizes_total_and_passes_arbitrary_filters(): void
+    {
+        Http::fake([
+            'test-api.creem.io/v1/transactions/search*' => Http::response([
+                'items' => [
+                    ['id' => 'txn_1', 'amount' => 1000],
+                ],
+                'pagination' => [
+                    'total_records' => 17,
+                    'total_pages' => 2,
+                    'current_page' => 1,
+                ],
+            ], 200),
+        ]);
+
+        $client = CreemClient::fromProfile('default');
+        $service = new TransactionService($client);
+
+        $result = $service->list([
+            'customer_id' => 'cust_123',
+            'product_id' => 'prod_456',
+            'order_id' => 'ord_789',
+            'status' => 'paid',
+        ], 1, 10);
+
+        Http::assertSent(function ($request) {
+            $data = $request->data();
+
+            return str_contains($request->url(), '/transactions/search')
+                && ($data['customer_id'] ?? null) === 'cust_123'
+                && ($data['product_id'] ?? null) === 'prod_456'
+                && ($data['order_id'] ?? null) === 'ord_789'
+                && ($data['status'] ?? null) === 'paid'
+                && ($data['page_number'] ?? null) === 1
+                && ($data['page_size'] ?? null) === 10;
+        });
+
+        $this->assertSame(17, $result['total']);
+        $this->assertSame(17, $result['pagination']['total_records']);
     }
 
     public function test_can_get_transactions_by_customer()
