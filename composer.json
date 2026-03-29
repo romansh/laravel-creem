@@ -1,6 +1,5 @@
 {
     "name": "romansh/laravel-creem",
-    "version": "1.2.9",
     "description": "A Laravel package for Creem.io payment provider with support for products, checkouts, subscriptions, transactions, licenses, and discount codes",
     "keywords": [
         "laravel",
