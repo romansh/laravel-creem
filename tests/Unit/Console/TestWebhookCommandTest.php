@@ -5,8 +5,6 @@ namespace Romansh\LaravelCreem\Tests\Unit\Console;
 use Orchestra\Testbench\TestCase;
 use Illuminate\Support\Facades\Http;
 use Romansh\LaravelCreem\CreemServiceProvider;
-use Symfony\Component\Console\Application as ConsoleApplication;
-use Symfony\Component\Console\Tester\CommandTester;
 use Romansh\LaravelCreem\Console\Commands\TestWebhookCommand;
 
 class TestWebhookCommandTest extends TestCase
@@ -66,17 +64,8 @@ class TestWebhookCommandTest extends TestCase
             '*' => Http::response('ok', 200),
         ]);
 
-        $application = new ConsoleApplication();
-        $commandInstance = $this->app->make(TestWebhookCommand::class);
-        $commandInstance->setLaravel($this->app);
-        $application->add($commandInstance);
-
-        $command = $application->find('creem:test-webhook');
-        $tester = new CommandTester($command);
-
-        $exit = $tester->execute(['event' => 'checkout.completed', '--profile' => 'default']);
-
-        $this->assertEquals(0, $exit);
+        $this->artisan('creem:test-webhook', ['event' => 'checkout.completed', '--profile' => 'default'])
+            ->assertExitCode(0);
     }
 
     public function test_handle_catches_exception_and_returns_failure()
