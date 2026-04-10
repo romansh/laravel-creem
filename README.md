@@ -109,6 +109,8 @@ $checkout = Creem::checkouts()->create([
 return redirect($checkout['checkout_url']);
 ```
 
+For direct or off-session payment flows, pass an explicit `price_id` rather than only a `product_id`. Hosted checkout can apply provider-side regional price selection, but saved-card style charges should identify the exact regional price to avoid currency mismatches.
+
 ### Using Named Profiles
 
 ```php
