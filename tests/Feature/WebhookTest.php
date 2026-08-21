@@ -29,8 +29,9 @@ class WebhookTest extends TestCase
     public function test_webhook_verifies_signature()
     {
         $payload = json_encode([
+            'id' => 'evt_checkout_123',
             'eventType' => 'checkout.completed',
-            'data' => ['id' => 'checkout_123'],
+            'object' => ['id' => 'checkout_123'],
         ]);
 
         $signature = hash_hmac('sha256', $payload, 'test_webhook_secret');
@@ -45,8 +46,9 @@ class WebhookTest extends TestCase
     public function test_webhook_rejects_invalid_signature()
     {
         $payload = [
+            'id' => 'evt_checkout_invalid',
             'eventType' => 'checkout.completed',
-            'data' => ['id' => 'checkout_123'],
+            'object' => ['id' => 'checkout_123'],
         ];
 
         $response = $this->postJson('/creem/webhook', $payload, [
@@ -59,8 +61,9 @@ class WebhookTest extends TestCase
     public function test_webhook_rejects_missing_signature()
     {
         $payload = [
+            'id' => 'evt_checkout_missing',
             'eventType' => 'checkout.completed',
-            'data' => ['id' => 'checkout_123'],
+            'object' => ['id' => 'checkout_123'],
         ];
 
         $response = $this->postJson('/creem/webhook', $payload);
@@ -73,8 +76,9 @@ class WebhookTest extends TestCase
         Event::fake();
 
         $payload = json_encode([
+            'id' => 'evt_checkout_123',
             'eventType' => 'checkout.completed',
-            'data' => ['id' => 'checkout_123'],
+            'object' => ['id' => 'checkout_123'],
         ]);
 
         $signature = hash_hmac('sha256', $payload, 'test_webhook_secret');

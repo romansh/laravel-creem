@@ -52,7 +52,7 @@ class TestWebhookCommand extends Command
 
         try {
             $response = Http::withHeaders([
-                'X-Creem-Signature' => $signature,
+                'creem-signature' => $signature,
                 'Content-Type' => 'application/json',
             ])->post($url, $payload);
 
@@ -79,10 +79,10 @@ class TestWebhookCommand extends Command
     protected function getTestPayload(string $event): array
     {
         return [
-            'event' => $event,
-            'id' => 'test_'.uniqid(),
-            'created_at' => now()->timestamp,
-            'data' => [
+            'id' => 'evt_'.uniqid(),
+            'eventType' => $event,
+            'created_at' => (int) (microtime(true) * 1000),
+            'object' => [
                 'object' => 'test_object',
                 'id' => 'test_id_'.uniqid(),
             ],

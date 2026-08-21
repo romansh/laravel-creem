@@ -41,15 +41,15 @@ class WebhookController extends Controller
             return response()->json(['message' => 'Event type missing'], 400);
         }
 
-        // Normalize payload to the CreemEvent shape expected by event classes.                                                                                                    
-        // Creem's real webhook payload nests the resource under `object`, not `data`.                                                                                             
-        $data = $payload['object'] ?? [];                                                                                                                                          
-                                                                                                                                                                                     
-        $normalized = [                                                                                                                                                            
-            'id' => $payload['id'] ?? $data['id'] ?? 'evt_unknown',
+        // Normalize payload to the CreemEvent shape expected by event classes.
+        // Creem's real webhook payload nests the resource under `object`, not `data`.
+        $object = $payload['object'] ?? [];
+
+        $normalized = [
+            'id' => $payload['id'] ?? $object['id'] ?? 'evt_unknown',
             'eventType' => $event,
             'created_at' => $payload['created_at'] ?? (int) (microtime(true) * 1000),
-            'object' => $data,
+            'object' => $object,
         ];
 
         $this->dispatchEvent($event, $normalized, $payload);
