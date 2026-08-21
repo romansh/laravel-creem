@@ -38,7 +38,15 @@ class WebhookControllerTest extends TestCase
     {
         Event::fake();
 
-        $payload = ['eventType' => 'checkout.completed', 'data' => ['id' => 'checkout_123']];
+        $payload = [
+            'id' => 'evt_checkout_123',
+            'eventType' => 'checkout.completed',
+            'object' => [
+                'id' => 'checkout_123',
+                'customer' => ['email' => 'customer@example.com'],
+                'metadata' => ['referenceId' => 'user_123'],
+            ],
+        ];
         $signature = hash_hmac('sha256', json_encode($payload), 'test_webhook_secret');
 
         $response = $this->postJson('/creem/webhook', $payload, [
@@ -46,15 +54,21 @@ class WebhookControllerTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        Event::assertDispatched(CheckoutCompleted::class);
-        Event::assertDispatched(GrantAccess::class);
+        Event::assertDispatched(CheckoutCompleted::class, function (CheckoutCompleted $event) use ($payload) {
+            return $event->eventId === $payload['id']
+                && $event->object === $payload['object'];
+        });
+        Event::assertDispatched(GrantAccess::class, function (GrantAccess $event) {
+            return $event->customer['email'] === 'customer@example.com'
+                && $event->metadata['referenceId'] === 'user_123';
+        });
     }
 
     public function test_webhook_dispatches_subscription_created_event()
     {
         Event::fake();
 
-        $payload = ['eventType' => 'subscription.created', 'data' => ['id' => 'sub_123']];
+        $payload = ['id' => 'evt_sub_123', 'eventType' => 'subscription.created', 'object' => ['id' => 'sub_123']];
         $signature = hash_hmac('sha256', json_encode($payload), 'test_webhook_secret');
 
         $this->postJson('/creem/webhook', $payload, [
@@ -68,7 +82,7 @@ class WebhookControllerTest extends TestCase
     {
         Event::fake();
 
-        $payload = ['eventType' => 'subscription.canceled', 'data' => ['id' => 'sub_123']];
+        $payload = ['id' => 'evt_cancel_123', 'eventType' => 'subscription.canceled', 'object' => ['id' => 'sub_123']];
         $signature = hash_hmac('sha256', json_encode($payload), 'test_webhook_secret');
 
         $this->postJson('/creem/webhook', $payload, [
@@ -83,7 +97,7 @@ class WebhookControllerTest extends TestCase
     {
         Event::fake();
 
-        $payload = ['eventType' => 'payment.failed', 'data' => ['id' => 'txn_123']];
+        $payload = ['id' => 'evt_payment_123', 'eventType' => 'payment.failed', 'object' => ['id' => 'txn_123']];
         $signature = hash_hmac('sha256', json_encode($payload), 'test_webhook_secret');
 
         $this->postJson('/creem/webhook', $payload, [
@@ -99,11 +113,11 @@ class WebhookControllerTest extends TestCase
         Log::spy();
 
         $controller = new \Romansh\LaravelCreem\Http\Controllers\WebhookController();
-        $request = new Request(['eventType' => 'unknown.event', 'data' => []]);
+        $request = new Request(['id' => 'evt_unknown_123', 'eventType' => 'unknown.event', 'object' => []]);
         $controller($request);
 
         Log::shouldHaveReceived('info')
-            ->with('Unhandled Creem webhook event: unknown.event', ['eventType' => 'unknown.event', 'data' => []]);
+            ->with('Unhandled Creem webhook event: unknown.event', ['id' => 'evt_unknown_123', 'eventType' => 'unknown.event', 'object' => []]);
     }
 
     public function test_returns_400_if_event_missing()
@@ -118,7 +132,7 @@ class WebhookControllerTest extends TestCase
     // Проверка отклонения запроса с неверной подписью
     public function test_webhook_rejects_invalid_signature()
     {
-        $payload = ['eventType' => 'checkout.completed', 'data' => ['id' => 'checkout_123']];
+        $payload = ['id' => 'evt_checkout_invalid', 'eventType' => 'checkout.completed', 'object' => ['id' => 'checkout_123']];
         $response = $this->postJson('/creem/webhook', $payload, [
             'creem-signature' => 'invalid_signature',
         ]);
@@ -128,7 +142,7 @@ class WebhookControllerTest extends TestCase
 
     public function test_webhook_rejects_missing_signature()
     {
-        $payload = ['eventType' => 'checkout.completed', 'data' => ['id' => 'checkout_123']];
+        $payload = ['id' => 'evt_checkout_missing', 'eventType' => 'checkout.completed', 'object' => ['id' => 'checkout_123']];
         $response = $this->postJson('/creem/webhook', $payload);
 
         $response->assertStatus(401);

@@ -2,10 +2,10 @@
 
 namespace Romansh\LaravelCreem\Tests\Unit\Console;
 
-use Orchestra\Testbench\TestCase;
+use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Facades\Http;
+use Orchestra\Testbench\TestCase;
 use Romansh\LaravelCreem\CreemServiceProvider;
-use Romansh\LaravelCreem\Console\Commands\TestWebhookCommand;
 
 class TestWebhookCommandTest extends TestCase
 {
@@ -42,6 +42,28 @@ class TestWebhookCommandTest extends TestCase
 
         $this->artisan('creem:test-webhook')
             ->assertExitCode(0);
+    }
+
+    public function test_command_sends_documented_webhook_payload()
+    {
+        config(['creem.profiles.default.webhook_secret' => 'secret']);
+
+        Http::fake([
+            '*' => Http::response('ok', 200),
+        ]);
+
+        $this->artisan('creem:test-webhook', ['event' => 'subscription.paid'])
+            ->assertExitCode(0);
+
+        Http::assertSent(function (HttpRequest $request): bool {
+            $payload = $request->data();
+
+            return is_string($payload['id'])
+                && str_starts_with($payload['id'], 'evt_')
+                && $payload['eventType'] === 'subscription.paid'
+                && is_int($payload['created_at'])
+                && str_starts_with($payload['object']['id'], 'test_id_');
+        });
     }
 
     public function test_failed_webhook_returns_failure_on_non_success()
