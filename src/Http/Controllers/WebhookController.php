@@ -42,7 +42,6 @@ class WebhookController extends Controller
         }
 
         // Normalize payload to the CreemEvent shape expected by event classes.
-        // Creem's real webhook payload nests the resource under `object`, not `data`.
         $object = $payload['object'] ?? [];
 
         $normalized = [
