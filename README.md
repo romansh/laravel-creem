@@ -364,6 +364,9 @@ Webhook routes are automatically registered. The default endpoint is:
 POST /creem/webhook
 ```
 
+Once the package is installed and configured, incoming webhooks are handled automatically:
+the package verifies the signature and dispatches the corresponding Laravel event.
+
 Configure the webhook URL in your Creem dashboard:
 
 ```
